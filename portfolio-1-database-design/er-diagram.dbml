@@ -1,0 +1,139 @@
+Table customers {
+  customer_id int [pk, increment]
+  full_name varchar(100) [not null]
+  email varchar(150) [not null, unique]
+  phone varchar(20)
+  password_hash varchar(255) [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table addresses {
+  address_id int [pk, increment]
+  customer_id int [not null]
+  street varchar(200) [not null]
+  city varchar(80) [not null]
+  state varchar(80) [not null]
+  is_default boolean [not null, default: false]
+  Note: 'Immutable: a change creates a new row'
+}
+
+Table vendors {
+  vendor_id int [pk, increment]
+  business_name varchar(150) [not null]
+  email varchar(150) [not null, unique]
+  phone varchar(20)
+  status varchar(20) [not null, default: 'active', note: 'active, suspended or closed']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table categories {
+  category_id int [pk, increment]
+  name varchar(100) [not null, unique]
+  description text
+}
+
+Table products {
+  product_id int [pk, increment]
+  category_id int [not null]
+  name varchar(200) [not null]
+  description text
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table vendor_products {
+  vendor_product_id int [pk, increment]
+  vendor_id int [not null]
+  product_id int [not null]
+  price numeric(12,2) [not null]
+  stock_quantity int [not null, default: 0]
+  is_active boolean [not null, default: true]
+
+  indexes {
+    (vendor_id, product_id) [unique]
+  }
+}
+
+Table delivery_agents {
+  agent_id int [pk, increment]
+  full_name varchar(100) [not null]
+  phone varchar(20)
+  status varchar(20) [not null, default: 'available']
+  is_active boolean [not null, default: true]
+}
+
+Table orders {
+  order_id int [pk, increment]
+  customer_id int [not null]
+  address_id int [not null]
+  order_date timestamptz [not null, default: `now()`]
+  status varchar(20) [not null, default: 'pending']
+  total_amount numeric(12,2) [not null]
+  Note: 'total_amount is a snapshot of the sum of order_items'
+}
+
+Table order_items {
+  order_item_id int [pk, increment]
+  order_id int [not null]
+  vendor_product_id int [not null]
+  quantity int [not null]
+  unit_price numeric(12,2) [not null]
+  Note: 'unit_price is the price at purchase time'
+
+  indexes {
+    (order_id, vendor_product_id) [unique]
+  }
+}
+
+Table payments {
+  payment_id int [pk, increment]
+  order_id int [not null]
+  method varchar(30) [not null]
+  amount numeric(12,2) [not null]
+  status varchar(20) [not null, default: 'pending']
+  attempted_at timestamptz [not null, default: `now()`]
+  paid_at timestamptz
+  Note: 'Partial unique index: one successful payment per order'
+}
+
+Table deliveries {
+  delivery_id int [pk, increment]
+  order_id int [not null]
+  vendor_id int [not null]
+  agent_id int
+  status varchar(20) [not null, default: 'processing']
+  shipped_at timestamptz
+  delivered_at timestamptz
+
+  indexes {
+    (order_id, vendor_id) [unique]
+  }
+}
+
+Table reviews {
+  review_id int [pk, increment]
+  customer_id int [not null]
+  product_id int [not null]
+  rating int [not null]
+  comment text
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (customer_id, product_id) [unique]
+  }
+}
+
+Ref: addresses.customer_id > customers.customer_id [delete: restrict]
+Ref: orders.customer_id > customers.customer_id [delete: restrict]
+Ref: orders.address_id > addresses.address_id [delete: restrict]
+Ref: products.category_id > categories.category_id [delete: restrict]
+Ref: vendor_products.vendor_id > vendors.vendor_id [delete: restrict]
+Ref: vendor_products.product_id > products.product_id [delete: restrict]
+Ref: order_items.order_id > orders.order_id [delete: cascade]
+Ref: order_items.vendor_product_id > vendor_products.vendor_product_id [delete: restrict]
+Ref: payments.order_id > orders.order_id [delete: restrict]
+Ref: deliveries.order_id > orders.order_id [delete: restrict]
+Ref: deliveries.vendor_id > vendors.vendor_id [delete: restrict]
+Ref: deliveries.agent_id > delivery_agents.agent_id [delete: set null]
+Ref: reviews.customer_id > customers.customer_id [delete: restrict]
+Ref: reviews.product_id > products.product_id [delete: restrict]
