@@ -1,3 +1,4 @@
+---shoptackle constraints query added
 -- 1. A second successful payment for order 1 (should be rejected by the partial unique index)
 INSERT INTO payments (order_id, method, amount, status, paid_at)
 VALUES (1, 'card', 215000.00, 'successful', now());
