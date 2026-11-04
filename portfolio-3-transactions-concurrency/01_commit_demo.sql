@@ -1,7 +1,5 @@
--- BEFORE: stock of vendor offer 1 (should be 25)
 SELECT vendor_product_id, stock_quantity FROM vendor_products WHERE vendor_product_id = 1;
 
--- CHUNK A: start the transaction and place an order for 2 units
 BEGIN;
 
 WITH new_order AS (
@@ -16,13 +14,10 @@ UPDATE vendor_products
 SET stock_quantity = stock_quantity - 2
 WHERE vendor_product_id = 1;
 
--- CHUNK B: look inside the open transaction (stock should show 23)
 SELECT vendor_product_id, stock_quantity FROM vendor_products WHERE vendor_product_id = 1;
 
--- CHUNK C: make it permanent
 COMMIT;
 
--- AFTER: the stock and the new order are saved
 SELECT vendor_product_id, stock_quantity FROM vendor_products WHERE vendor_product_id = 1;
 
 SELECT o.order_id, o.total_amount, oi.quantity, oi.unit_price
