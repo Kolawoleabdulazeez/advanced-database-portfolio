@@ -17,6 +17,7 @@ The tests showed that:
 - Two simultaneous users were able to oversell available stock.
 - Row locking prevented the overselling problem.
 - `READ COMMITTED` and `REPEATABLE READ` produced different results when data changed during a transaction.
+Concurrent payments Tesing: Tab A inserted a successful payment for order 3 without committing. Tab B's attempt to insert a second successful payment for the same order waited. After Tab A committed, Tab B failed with a unique violation (23505) from the partial unique index, and only one successful payment remained. 
 
 ## Key Learnings
 - Understood how database transactions protect data consistency.
