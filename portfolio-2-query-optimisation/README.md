@@ -6,11 +6,11 @@ This project explores how PostgreSQL handles database queries and how adding the
 I tested five common business queries using sample Shoptackles data, measured their execution times, and compared the results before and after adding indexes.
 
 ## What the Project Covers
-- Generating realistic sample data for the database.
+- Generating sample data for the database.
 - Running five queries based on common business operations.
 - Measuring query performance before indexing.
 - Adding six indexes to improve data retrieval.
-- Comparing execution times and reviewing the improvements.
+- Comparing query execution times before and after indexing.
 
 ## Test Data
 The database contains approximately:
@@ -38,12 +38,12 @@ The database contains approximately:
 | Q4 | 264.888 ms | 175.785 ms | 1.5× |
 | Q5 | 115.397 ms | 3.391 ms | 34× |
 
-The results show that adding appropriate indexes significantly improved the performance of most queries, particularly customer order history and shipment tracking.
+The results show that indexing improved the performance of all five queries, with the biggest improvements seen in customer order history and shipment tracking.
 
 ## Key Learnings
 - Learned how to analyse PostgreSQL query performance.
 - Understood how indexes improve data retrieval.
-- Learned that not every index improves every query.
+- Learned that not every index improves query performance equally.
 - Understood the importance of balancing query speed with database storage and maintenance costs.
 
 ## How to Reproduce
@@ -53,4 +53,4 @@ Run the SQL scripts in the following order:
 2. `02_queries.sql`
 3. `03_indexes.sql`
 
-Use the provided execution plans and screenshots to compare the results before and after indexing.
+Use the provided execution plans and screenshots to compare performance before and after indexing.
