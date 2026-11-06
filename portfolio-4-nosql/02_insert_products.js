@@ -1,3 +1,5 @@
+db = db.getSiblingDB("shoptackles");
+db.products.deleteMany({});
 db.products.insertMany([
   {
     _id: 1,
