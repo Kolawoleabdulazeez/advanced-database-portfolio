@@ -1,39 +1,51 @@
-# Replica set setup (MongoDB, local 3-node cluster)
+# MongoDB Replica Set Setup (Shoptackles)
 
-This file records the commands used to build a three-node MongoDB replica set called `shoprs` on one Windows laptop. Each node is a separate `mongod` process with its own port and its own data folder. They share one machine, so this simulates a cluster for coursework and cannot survive a failure of the laptop itself.
+## Overview
+This project involves setting up a three-node MongoDB replica set called `shoprs` on a Windows laptop.
 
-## Environment
-- Windows 11, MongoDB Server 9.0.4, mongosh 2.14.1
-- The default MongoDB on port 27017 was left untouched. The replica set uses ports 27018, 27019 and 27020.
+Each node runs independently with its own port and data folder. The setup was used to test data replication, read operations and what happens when a database node becomes unavailable.
 
-## 1. Data folders
-Created outside the repository, because they hold database files that must not be committed:
-```
+**Environment:**
+- Windows 11
+- MongoDB Server 9.0.4
+- MongoDB Shell (mongosh) 2.14.1
+- Three nodes running on ports `27018`, `27019` and `27020`.
+
+## 1. Create the Data Folders
+
+I created separate folders for each node to store its database files.
+
+```bash
 mkdir C:\mongo-rs\node1
 mkdir C:\mongo-rs\node2
 mkdir C:\mongo-rs\node3
 ```
 
-## 2. Start the three servers
-Each command runs in its own Command Prompt window, which stays open while the server runs.
-```
+## 2. Start the Three MongoDB Servers
+
+I opened three separate Command Prompt windows and ran one command in each to start the servers.
+
+```bash
 "C:\Program Files\MongoDB\Server\9.0\bin\mongod.exe" --replSet shoprs --port 27018 --dbpath C:\mongo-rs\node1 --bind_ip localhost
+
 "C:\Program Files\MongoDB\Server\9.0\bin\mongod.exe" --replSet shoprs --port 27019 --dbpath C:\mongo-rs\node2 --bind_ip localhost
+
 "C:\Program Files\MongoDB\Server\9.0\bin\mongod.exe" --replSet shoprs --port 27020 --dbpath C:\mongo-rs\node3 --bind_ip localhost
 ```
 
-| Option | Meaning |
-|---|---|
-| `--replSet shoprs` | The node belongs to a replica set named `shoprs` |
-| `--port` | The port this node listens on |
-| `--dbpath` | The folder where this node keeps its own copy of the data |
-| `--bind_ip localhost` | Only this computer can connect |
+Each server runs independently but belongs to the same replica set.
 
-Before the set is initiated, the nodes log warnings such as `local.oplog.rs not found` and `No primary exists currently`. This is expected: the oplog is created when the set is initiated.
+## 3. Initialise the Replica Set
 
-## 3. Initiate the replica set
-Connected with `mongosh --port 27018`:
-```js
+I connected to the first node using:
+
+```bash
+mongosh --port 27018
+```
+
+Then I initialised the replica set:
+
+```javascript
 rs.initiate({
   _id: "shoprs",
   members: [
@@ -44,45 +56,93 @@ rs.initiate({
 })
 ```
 
-Check the members:
-```js
-rs.status().members.map(m => ({ name: m.name, state: m.stateStr }))
+To confirm that the setup was successful, I checked the status:
+
+```javascript
+rs.status().members.map(m => ({
+  name: m.name,
+  state: m.stateStr
+}))
 ```
-Result: `localhost:27018` is PRIMARY, and `localhost:27019` and `localhost:27020` are SECONDARY (`evidence/rs-status.png`).
 
-## 4. Load the Shoptackles data on the primary
-The Portfolio 4 scripts were run against the primary (pasted into a mongosh session connected to port 27018):
-- `portfolio-4-nosql/02_insert_products.js` (4 products)
-- `portfolio-4-nosql/03_insert_orders.js` (3 orders)
+The result showed one PRIMARY and two SECONDARY nodes.
 
-On the primary:
-```js
+Screenshot: `evidence/rs-status.png`
+
+## 4. Load the Shoptackles Data
+
+I loaded the sample products and orders from Portfolio 4 into the primary node.
+
+- `02_insert_products.js` inserted 4 products.
+- `03_insert_orders.js` inserted 3 orders.
+
+I confirmed the records using:
+
+```javascript
 use shoptackles
-db.products.countDocuments()   // 4
-db.orders.countDocuments()     // 3
-```
-Evidence: `evidence/replication-primary.png`.
 
-## 5. Check replication from a secondary
-Connected with `mongosh --port 27019`:
-```js
+db.products.countDocuments()  // 4
+db.orders.countDocuments()    // 3
+```
+
+Screenshot: `evidence/replication-primary.png`
+
+## 5. Verify Data Replication
+
+I connected to the second node using:
+
+```bash
+mongosh --port 27019
+```
+
+Then I checked whether the data from the primary was available:
+
+```javascript
 use shoptackles
-db.products.countDocuments()                               // 4 (copied from the primary)
-db.orders.find({ _id: 2 }, { customer: 1, totalAmount: 1 })
-db.hello().secondary                                       // true
-db.hello().primary                                         // 'localhost:27018'
+
+db.products.countDocuments()  // 4
+
+db.orders.find(
+  { _id: 2 },
+  { customer: 1, totalAmount: 1 }
+)
+
+db.hello().secondary  // true
+db.hello().primary    // localhost:27018
 ```
-Evidence: `evidence/replication-secondary.png`.
 
-## 6. Writes to a secondary are refused
-```js
-db.products.insertOne({ _id: 99, name: "Test product" })
+The results confirmed that the secondary node had received the data from the primary.
+
+Screenshot: `evidence/replication-secondary.png`
+
+## 6. Test Writes on a Secondary Node
+
+I attempted to insert a new product while connected to the secondary:
+
+```javascript
+db.products.insertOne({
+  _id: 99,
+  name: "Test product"
+})
 ```
-Result: `MongoServerError: not primary`. Only the primary accepts writes, and secondaries are read-only copies (`evidence/secondary-write-refused.png`).
 
-## How replication works here
-The primary records every change in its oplog (the `local.oplog.rs` collection). Each secondary copies new oplog entries from the primary and applies them, so all three nodes hold the same data.
+MongoDB rejected the operation with a `not primary` error because secondary nodes do not accept normal writes.
 
-## Notes
-- The data folders in `C:\mongo-rs` are not part of this repository.
-- To stop the cluster, press Ctrl+C in each server window.
+Screenshot: `evidence/secondary-write-refused.png`
+
+## Key Learnings
+- Learned how to set up a MongoDB replica set.
+- Understood the difference between primary and secondary nodes.
+- Learned how data is replicated across multiple nodes.
+- Understood why writes are handled by the primary while secondary nodes can serve reads.
+- Gained practical experience preparing a replica set for failover testing.
+
+## How to Reproduce
+1. Create the three data folders.
+2. Start the three MongoDB servers using the commands above.
+3. Connect to port `27018` and initialise the replica set.
+4. Load the Shoptackles sample data.
+5. Connect to a secondary node and verify replication.
+6. Attempt a write on the secondary to confirm that it is rejected.
+
+**Note:** All three nodes run on the same laptop. This setup demonstrates MongoDB replication but does not provide protection against failure of the physical machine.
