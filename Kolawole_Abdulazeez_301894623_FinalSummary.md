@@ -1,18 +1,16 @@
-# Advanced Database Systems Portfolio: Shoptackles (MIT 8103)
+MIT 8103 Advanced Database Systems: Individual Practical Database Portfolio
+Name: Kolawole Abdulazeez 
+Student ID: 301894623
+Academic session: 2026/2027
+GitHub repository: https://github.com/Kolawoleabdulazeez/advanced-database-portfolio.git 
 
-**Student:** [Your name] | **Student number:** [Your number]  
-**Session:** 2026/2027 First Semester Continuous Assessment  
-**GitHub repository:** [Repository link] (Private, assessor access granted)
 
-## Case Study
+1. Case Study 
+Shoptackles is a multi-vendor e-commerce platform where independent vendors list products and customers can browse, compare and purchase products from several vendors in a single order. It is a product I have worked on, but all data used in this portfolio is simulated. The same case study is used across all five portfolios.
+•	Users: Customers, vendors, administrators and delivery agents.
+•	Major data: Customers and addresses, vendors, categories, products, vendor offers (price and stock), orders and order items, payments, deliveries, delivery agents and reviews.
+•	Key operations: Product listing, multi-vendor ordering, stock updates, payment attempts, vendor-specific deliveries, product reviews and sales reporting.
 
-**Shoptackles** is a multi-vendor e-commerce platform where independent vendors list products and customers can browse, compare and purchase products from multiple vendors in a single order. It is a product I have worked on, but all data used in this portfolio is simulated.
-
-The platform supports:
-
-- **Users:** Customers, vendors, administrators and delivery agents.
-- **Major data:** Customers and addresses, vendors, categories, products, vendor offers, orders, order items, payments, deliveries, delivery agents and reviews.
-- **Key operations:** Product listing, multi-vendor ordering, stock updates, payment attempts, vendor-specific deliveries, product reviews and sales reporting.
 
 The full case study is documented in `portfolio-1-database-design/case-study.md`. The same case study is used across all five portfolios.
 
@@ -73,6 +71,12 @@ Some demonstrations modify data. The relevant scripts include instructions for r
 Screenshots of the implementation and test results are available in the `evidence/` folder within each portfolio. Query execution plans are saved as text files in `portfolio-2-query-optimisation/plans/`.
 
 The Git commit history also shows how the project developed progressively throughout the semester.
+
+## Individual Technical Reflection
+
+One of the key decisions I made in designing Shoptackles was separating products from vendor offers. This allowed different vendors to sell the same product at different prices and maintain their own stock records. During the transaction exercises, I also learned how easily concurrent operations can affect stock accuracy. In particular, testing two sessions attempting to purchase the same available stock helped me understand why database locking is important and how SELECT ... FOR UPDATE prevents both transactions from processing the same stock simultaneously.
+The query optimisation exercise also changed how I approach database performance. I initially expected indexes to improve every query significantly, but the execution plans showed that the results depend on the query and the amount of data being accessed. 
+
 
 ## Limitations
 
