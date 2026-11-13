@@ -7,8 +7,11 @@ GitHub repository: https://github.com/Kolawoleabdulazeez/advanced-database-portf
 
 1. Case Study 
 Shoptackles is a multi-vendor e-commerce platform where independent vendors list products and customers can browse, compare and purchase products from several vendors in a single order. It is a product I have worked on, but all data used in this portfolio is simulated. The same case study is used across all five portfolios.
+
 •	Users: Customers, vendors, administrators and delivery agents.
+
 •	Major data: Customers and addresses, vendors, categories, products, vendor offers (price and stock), orders and order items, payments, deliveries, delivery agents and reviews.
+
 •	Key operations: Product listing, multi-vendor ordering, stock updates, payment attempts, vendor-specific deliveries, product reviews and sales reporting.
 
 
